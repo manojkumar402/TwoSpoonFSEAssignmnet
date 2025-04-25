@@ -51,10 +51,8 @@ exports.getOneFile = async (req,res) =>{
 exports.createFile = async(req,res) => {
     try {
         const {name} = req.body;
-        console.log('name--' + name);
 
         const {file} = req.files;
-        console.log('file--' + file);
         const fileName = "images/"+v4();
 
         if(!name || !file){
@@ -73,7 +71,7 @@ exports.createFile = async(req,res) => {
             });
         }
 
-        const book = await Book.create({name,imageUrl:url,key});
+        const book = await File.create({name,imageUrl:url,key});
         
         if(!book){
             return res.status(400).json({
@@ -91,43 +89,45 @@ exports.createFile = async(req,res) => {
     }
 }
 
-exports.updateFile = async (req,res) => {
+exports.updateFile = async (req, res) => {
     try {
-        const {id} = req.params;
-        const {name} = req.body;
-        const {file: files} = req.files;
+        const { id } = req.params;
+        const { name } = req.body;
 
         const file = await File.findById(id);
-        if(!file){
+        if (!file) {
             return res.status(400).json({
-                "status": "error",
-                "data": file,
-            })
+                status: "error",
+                message: "File not found",
+            });
         }
-        
-        //Upload file to S3
-        const data = await putObject(files.data,file.key);
-        //
-        
-        const updatedFile = await File.findByIdAndUpdate(id,{name,imageUrl:data.url,key:data.key},{
-            new:true,
-        });
-       
-        if(!updatedFile){
+
+        const updatedFile = await File.findByIdAndUpdate(
+            id,
+            { name },
+            { new: true }
+        );
+
+        if (!updatedFile) {
             return res.status(400).json({
-                "status": "error",
-                "data": updatedFile,
-            })
+                status: "error",
+                message: "Failed to update file name",
+            });
         }
 
         return res.status(200).json({
-            "status":"success",
-            "data":updatedFile,
+            status: "success",
+            data: updatedFile,
         });
     } catch (err) {
         console.error(err);
+        return res.status(500).json({
+            status: "error",
+            message: "Internal server error",
+        });
     }
-}
+};
+
 
 exports.deleteFile = async (req,res) =>{
     try {
