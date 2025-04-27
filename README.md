@@ -18,7 +18,7 @@ nodemon server.js
 # To run the client/views
 cd client
 npm install
-npm start
+npm run dev
 ```
 ## Folder Structure
 * `client/` — Frontend app
